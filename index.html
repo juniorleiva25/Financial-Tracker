@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Junior · Financial Tracker v4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#080808;--surface:#111;--surface2:#181818;--surface3:#1e1e1e;
+  --border:#242424;--gold:#f5a623;--gold-dim:rgba(245,166,35,0.12);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.1);
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
+  --pink:#ec4899;--pink-dim:rgba(236,72,153,0.1);
+  --text:#efefef;--text-mid:#777;--text-dim:#444;--radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:18px 13px 100px;}
+.hdr{text-align:center;margin-bottom:22px;}
+.hdr-eye{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
+.hdr h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;line-height:1;}
+.hdr-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:3px;}
+.nav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-tab{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-mid);cursor:pointer;transition:all .2s;}
+.nav-tab.active{background:var(--gold);border-color:var(--gold);color:#000;font-weight:600;}
+.prog-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;margin-bottom:16px;}
+.prog-top{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mid);margin-bottom:7px;}
+.prog-track{height:5px;background:var(--border);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),#ffd07a);border-radius:99px;transition:width .5s ease;}
+.month-select-wrap{margin-bottom:16px;}
+.month-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;padding:12px 14px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f5a623' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+.month-select option{background:#1a1a1a;color:#efefef;font-family:'DM Sans',sans-serif;font-size:14px;}
+.section{margin-bottom:10px;}
+.sec-head{display:flex;align-items:center;gap:8px;padding:11px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;user-select:none;transition:background .15s;}
+.sec-head:hover{background:var(--surface3);}
+.sec-head.open{border-radius:var(--radius) var(--radius) 0 0;}
+.sec-emoji{font-size:15px;flex-shrink:0;}
+.sec-info{flex:1;min-width:0;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sec-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:1px;}
+.sec-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,0.05);flex-shrink:0;}
+.chev{font-size:9px;color:var(--text-dim);flex-shrink:0;transition:transform .2s;}
+.chev.open{transform:rotate(180deg);}
+.sec-body{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden;display:none;}
+.sec-body.open{display:block;}
+
+/* HUB SUMMARY CARD — 3 columns now */
+.def-card{padding:11px 13px;background:var(–surface2);border-bottom:1px solid var(–border);}
+.def-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.def-item{background:var(–surface3);border-radius:6px;padding:8px 10px;}
+.def-lbl{font-family:‘DM Mono’,monospace;font-size:8px;color:var(–text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.def-val{font-family:‘DM Mono’,monospace;font-size:12px;font-weight:500;}
+.def-val.neg{color:var(–red);}
+.def-val.pos{color:var(–green);}
+.def-val.gold{color:var(–gold);}
+
+/* ITEMS */
+.item{display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid var(–border);transition:background .12s;position:relative;}
+.item:last-child{border-bottom:none;}
+.item:hover{background:var(–surface2);}
+.item.done{opacity:.42;}
+.item.inc-row{background:rgba(34,197,94,0.025);}
+.item.exp-row{background:rgba(239,68,68,0.02);}
+.cb{width:17px;height:17px;border:1.5px solid var(–border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;cursor:pointer;}
+.item.done .cb{background:var(–green);border-color:var(–green);}
+.item-body{flex:1;min-width:0;cursor:pointer;}
+.item-label{font-size:13px;font-weight:500;}
+.item.done .item-label{text-decoration:line-through;color:var(–text-dim);}
+.item-sub{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);margin-top:1px;}
+.paid-tag{display:inline-block;margin-top:3px;font-family:‘DM Mono’,monospace;font-size:8px;padding:2px 5px;border-radius:3px;background:var(–green-dim);color:var(–green);border:1px solid rgba(34,197,94,0.2);}
+.item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.item-amount{font-family:‘DM Mono’,monospace;font-size:12px;font-weight:500;color:var(–red);}
+.item-amount.pos{color:var(–green);}
+.item-btns{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
+.ibtn{font-size:8px;font-family:‘DM Mono’,monospace;padding:2px 5px;border-radius:3px;cursor:pointer;white-space:nowrap;border:1px solid;}
+.ibtn-edit{background:var(–gold-dim);color:var(–gold);border-color:rgba(245,166,35,0.2);}
+.ibtn-edit:hover{background:rgba(245,166,35,0.2);}
+.ibtn-pay{background:var(–blue-dim);color:var(–blue);border-color:rgba(59,130,246,0.2);}
+.ibtn-pay:hover{background:rgba(59,130,246,0.2);}
+.ibtn-rm{background:var(–red-dim);color:var(–red);border-color:rgba(239,68,68,0.2);}
+.ibtn-rm:hover{background:rgba(239,68,68,0.2);}
+
+/* SPENDINGS BREAKDOWN */
+.spend-section{border-bottom:1px solid var(–border);}
+.spend-header{padding:10px 13px;background:rgba(245,166,35,0.04);border-bottom:1px solid var(–border);}
+.spend-header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.spend-title{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–gold);font-weight:500;}
+.spend-budget{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–text-mid);}
+.spend-track{height:3px;background:var(–border);border-radius:99px;overflow:hidden;margin-top:6px;}
+.spend-fill{height:100%;border-radius:99px;transition:width .3s;}
+.spend-leftover{font-family:‘DM Mono’,monospace;font-size:10px;margin-top:4px;}
+.spend-entry{display:flex;align-items:center;gap:8px;padding:7px 13px;border-bottom:1px solid var(–border);}
+.spend-entry:last-child{border-bottom:none;}
+.spend-entry-label{flex:1;font-size:12px;color:var(–text-mid);}
+.spend-entry-date{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);min-width:50px;}
+.spend-entry-amt{font-family:‘DM Mono’,monospace;font-size:12px;color:var(–gold);}
+.spend-entry-rm{font-size:9px;color:var(–text-dim);cursor:pointer;padding:2px 4px;}
+.spend-entry-rm:hover{color:var(–red);}
+.spend-add-row{display:flex;gap:6px;padding:8px 13px;border-top:1px solid var(–border);background:var(–surface2);}
+.spend-add-input{flex:1;background:var(–surface3);border:1px solid var(–border);border-radius:5px;color:var(–text);font-family:‘DM Mono’,monospace;font-size:11px;padding:5px 7px;outline:none;}
+.spend-add-input:focus{border-color:var(–gold);}
+.spend-add-input.amt{width:70px;flex:none;color:var(–gold);}
+.spend-add-input.dt{width:65px;flex:none;color:var(–text-mid);}
+.spend-add-btn{background:var(–gold);border:none;border-radius:5px;color:#000;font-family:‘DM Mono’,monospace;font-size:10px;font-weight:700;padding:5px 10px;cursor:pointer;}
+
+/* SIP */
+.sip-header{padding:10px 13px;background:var(–pink-dim);border-bottom:1px solid var(–border);}
+.sip-prog-top{display:flex;justify-content:space-between;font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-mid);margin-bottom:5px;}
+.sip-track{height:4px;background:var(–border);border-radius:99px;overflow:hidden;margin-bottom:4px;}
+.sip-fill{height:100%;background:linear-gradient(90deg,var(–pink),#f472b6);border-radius:99px;transition:width .4s;}
+.sip-earned-txt{font-family:‘DM Mono’,monospace;font-size:10px;color:var(–pink);font-weight:500;}
+.sip-week{border-bottom:1px solid var(–border);}
+.sip-week-head{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:rgba(236,72,153,0.03);}
+.sip-week-head:hover{background:rgba(236,72,153,0.06);}
+.sip-week-title{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–pink);font-weight:500;}
+.sip-week-earned{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–text-mid);}
+.sip-week-body{display:none;padding:0 13px 10px;background:rgba(236,72,153,0.02);}
+.sip-week-body.open{display:block;}
+.sip-day-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(–border);}
+.sip-day-row:last-child{border-bottom:none;}
+.sip-day-label{font-family:‘DM Mono’,monospace;font-size:10px;color:var(–text-mid);width:40px;flex-shrink:0;}
+.sip-hrs-input{background:var(–surface3);border:1px solid var(–border);border-radius:5px;color:var(–pink);font-family:‘DM Mono’,monospace;font-size:11px;padding:4px 7px;width:55px;text-align:right;outline:none;}
+.sip-hrs-input:focus{border-color:var(–pink);}
+.sip-hrs-lbl{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);}
+.sip-earned-day{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–pink);min-width:50px;text-align:right;}
+
+/* DOORDASH */
+.dd-week{border-bottom:1px solid var(–border);}
+.dd-week-head{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:rgba(59,130,246,0.03);}
+.dd-week-head:hover{background:rgba(59,130,246,0.06);}
+.dd-week-title{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–blue);font-weight:500;}
+.dd-week-total{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–text-mid);}
+.dd-week-body{display:none;padding:8px 13px;background:rgba(59,130,246,0.02);}
+.dd-week-body.open{display:block;}
+.dd-session{display:grid;grid-template-columns:auto 1fr 75px 75px;gap:5px;align-items:center;padding:6px 0;border-bottom:1px solid var(–border);}
+.dd-session:last-child{border-bottom:none;}
+.dd-session-label{font-family:‘DM Mono’,monospace;font-size:10px;color:var(–text-mid);}
+.dd-input{background:var(–surface3);border:1px solid var(–border);border-radius:5px;color:var(–blue);font-family:‘DM Mono’,monospace;font-size:11px;padding:4px 7px;width:100%;text-align:right;outline:none;}
+.dd-input:focus{border-color:var(–blue);}
+.dd-date-input{background:var(–surface3);border:1px solid var(–border);border-radius:5px;color:var(–text-mid);font-family:‘DM Mono’,monospace;font-size:10px;padding:4px 5px;width:100%;outline:none;}
+.dd-date-input:focus{border-color:var(–blue);}
+.dd-summary{padding:10px 13px;background:rgba(59,130,246,0.05);border-bottom:1px solid var(–border);}
+.dd-sum-row{display:flex;justify-content:space-between;font-family:‘DM Mono’,monospace;font-size:10px;color:var(–text-mid);padding:2px 0;}
+.dd-sum-row.total{color:var(–blue);font-size:12px;font-weight:500;border-top:1px solid var(–border);margin-top:4px;padding-top:5px;}
+.var-row{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(–border);background:rgba(34,197,94,0.025);}
+.var-row:last-child{border-bottom:none;}
+.var-info{flex:1;}
+.var-label{font-size:12px;color:var(–text-mid);}
+.var-sub{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);margin-top:1px;}
+.var-input{background:var(–surface2);border:1px solid var(–border);border-radius:5px;font-family:‘DM Mono’,monospace;font-size:11px;padding:5px 7px;width:85px;text-align:right;outline:none;}
+.ken-sum{padding:9px 13px;background:var(–purple-dim);border-bottom:1px solid var(–border);}
+.ken-row{display:flex;justify-content:space-between;font-family:‘DM Mono’,monospace;font-size:11px;color:var(–text-mid);padding:2px 0;}
+.ken-row.total{border-top:1px solid var(–border);margin-top:4px;padding-top:5px;color:var(–text);}
+.add-btn{display:flex;align-items:center;gap:7px;padding:9px 13px;cursor:pointer;color:var(–text-dim);font-family:‘DM Mono’,monospace;font-size:10px;transition:all .15s;border-top:1px solid var(–border);}
+.add-btn:hover{color:var(–gold);background:var(–gold-dim);}
+.add-form{padding:11px 13px;background:var(–surface2);display:none;border-top:1px solid var(–border);}
+.add-form.open{display:block;}
+.add-form input{width:100%;background:var(–surface3);border:1px solid var(–border);border-radius:5px;color:var(–text);font-family:‘DM Mono’,monospace;font-size:11px;padding:7px 9px;margin-bottom:7px;outline:none;}
+.add-form input:focus{border-color:var(–gold);}
+.add-form-row{display:flex;gap:7px;margin-bottom:7px;}
+.add-form-row input{margin-bottom:0;}
+.add-submit{width:100%;padding:8px;background:var(–gold);border:none;border-radius:5px;color:#000;font-family:‘DM Mono’,monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;}
+.goal-item{padding:13px;border-bottom:1px solid var(–border);}
+.goal-item:last-child{border-bottom:none;}
+.goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.goal-name{font-size:14px;font-weight:600;}
+.goal-target{font-family:‘DM Mono’,monospace;font-size:12px;color:var(–text-mid);}
+.goal-note{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);margin-bottom:6px;}
+.goal-track{height:4px;background:var(–border);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.goal-fill-sav{height:100%;background:linear-gradient(90deg,var(–blue),#60a5fa);border-radius:99px;transition:width .4s;}
+.goal-fill-debt{height:100%;background:linear-gradient(90deg,var(–red),#f87171);border-radius:99px;transition:width .4s;}
+.goal-bot{display:flex;justify-content:space-between;font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);}
+.alloc-btn{font-size:9px;font-family:‘DM Mono’,monospace;padding:3px 8px;border-radius:3px;background:var(–blue-dim);color:var(–blue);border:1px solid rgba(59,130,246,0.2);cursor:pointer;margin-top:6px;}
+.alloc-btn.debt{background:var(–red-dim);color:var(–red);border-color:rgba(239,68,68,0.2);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.87);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(–surface);border:1px solid var(–border);border-radius:13px;padding:19px;width:100%;max-width:350px;}
+.modal-title{font-family:‘Bebas Neue’,sans-serif;font-size:19px;letter-spacing:1px;margin-bottom:12px;color:var(–gold);}
+.modal-note{font-family:‘DM Mono’,monospace;font-size:10px;color:var(–text-dim);margin-bottom:11px;}
+.modal select,.modal input{width:100%;background:var(–surface2);border:1px solid var(–border);border-radius:5px;color:var(–text);font-family:‘DM Mono’,monospace;font-size:12px;padding:8px 9px;margin-bottom:9px;outline:none;}
+.modal select option{background:var(–surface2);}
+.modal select:focus,.modal input:focus{border-color:var(–gold);}
+.modal-lbl{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;display:block;}
+.modal-btns{display:flex;gap:7px;margin-top:3px;}
+.m-confirm{flex:1;padding:9px;background:var(–green);border:none;border-radius:5px;color:#000;font-family:‘DM Mono’,monospace;font-size:10px;font-weight:700;cursor:pointer;}
+.m-cancel{flex:1;padding:9px;background:transparent;border:1px solid var(–border);border-radius:5px;color:var(–text-mid);font-family:‘DM Mono’,monospace;font-size:10px;cursor:pointer;}
+.m-delete{flex:1;padding:9px;background:var(–red-dim);border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:var(–red);font-family:‘DM Mono’,monospace;font-size:10px;cursor:pointer;}
+.save-bar{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(–surface);border:1px solid var(–border);border-radius:var(–radius);margin-bottom:12px;}
+.save-status{flex:1;font-family:‘DM Mono’,monospace;font-size:10px;color:var(–text-dim);}
+.save-status.saved{color:var(–green);}
+.save-status.unsaved{color:var(–gold);}
+.save-ibtn{font-family:‘DM Mono’,monospace;font-size:10px;padding:6px 10px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;}
+.save-ibtn-export{background:var(–green-dim);color:var(–green);border-color:rgba(34,197,94,0.3);}
+.save-ibtn-import{background:var(–blue-dim);color:var(–blue);border-color:rgba(59,130,246,0.3);}
+#import-file-input{display:none;}
+</style>
+
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-eye">Junior Leiva · 2026</div>
+  <h1>FINANCIAL TRACKER</h1>
+  <div class="hdr-sub">MAY 14 — AUG 20 · ALL STREAMS</div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="switchPage('checks',this)">💰 Checks</div>
+  <div class="nav-tab" onclick="switchPage('savings',this)">🎯 Savings</div>
+  <div class="nav-tab" onclick="switchPage('debt',this)">💳 Debt</div>
+</div>
+
+<!-- SAVE BAR REMOVED -->
+
+<!-- SAVE MODAL — copy text to paste into Notes -->
+
+<div class="overlay" id="save-modal">
+  <div class="modal">
+    <div class="modal-title">⬇ Save Your Progress</div>
+    <div class="modal-note">Select all the text below and copy it. Then paste it into Apple Notes and title it "Tracker Save". Next time, paste it back here to reload.</div>
+    <textarea id="save-modal-text" readonly style="width:100%;height:120px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text-mid);font-family:'DM Mono',monospace;font-size:9px;padding:8px;resize:none;outline:none;word-break:break-all;"></textarea>
+    <div class="modal-btns" style="margin-top:10px;">
+      <button class="m-cancel" onclick="closeSaveModal()">Close</button>
+      <button class="m-confirm" onclick="copySaveText()">📋 Copy All</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAD MODAL — paste text from Notes -->
+
+<div class="overlay" id="load-modal">
+  <div class="modal">
+    <div class="modal-title">⬆ Load Your Save</div>
+    <div class="modal-note">Open your Apple Notes save, copy the text, and paste it below.</div>
+    <textarea id="load-modal-text" style="width:100%;height:120px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--green);font-family:'DM Mono',monospace;font-size:9px;padding:8px;resize:none;outline:none;word-break:break-all;" placeholder="Paste your save text here..."></textarea>
+    <div class="modal-btns" style="margin-top:10px;">
+      <button class="m-cancel" onclick="closeLoadModal()">Cancel</button>
+      <button class="m-confirm" onclick="loadFromText()">✅ Load</button>
+    </div>
+  </div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-top"><span>OVERALL PROGRESS</span><span id="prog-txt">0%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<div class="page active" id="page-checks">
+  <div class="month-select-wrap">
+    <select class="month-select" id="month-select" onchange="switchMonth(this.value)">
+      <option value="may">▾ MAY 2026</option>
+      <option value="jun">▾ JUNE 2026</option>
+      <option value="jul">▾ JULY 2026</option>
+      <option value="aug">▾ AUGUST 2026</option>
+    </select>
+  </div>
+  <div id="sections-container"></div>
+  <button class="reset-btn" onclick="openReset('all')">↺ Reset All Checkboxes</button>
+</div>
+
+<div class="page" id="page-savings">
+  <div class="section">
+    <div class="sec-head open"><span class="sec-emoji">🎯</span>
+      <div class="sec-info"><div class="sec-title" style="color:var(--gold)">SAVINGS GOALS</div><div class="sec-meta">Stack one at a time · $197.47/check</div></div>
+    </div>
+    <div class="sec-body open" id="sav-body"></div>
+  </div>
+  <button class="reset-btn" onclick="openReset('savings')">↺ Reset Savings</button>
+</div>
+
+<div class="page" id="page-debt">
+  <div class="section">
+    <div class="sec-head open"><span class="sec-emoji">💳</span>
+      <div class="sec-info"><div class="sec-title" style="color:var(--red)">DEBT PAYOFF ORDER</div><div class="sec-meta">Credit first · $342.29/check</div></div>
+    </div>
+    <div class="sec-body open" id="debt-body"></div>
+  </div>
+  <button class="reset-btn" onclick="openReset('debt')">↺ Reset Debt Progress</button>
+</div>
+
+<!-- RESET MODAL — 3 step -->
+
+<div class="overlay" id="reset-overlay">
+  <div class="modal">
+    <div class="modal-title" id="reset-title" style="color:var(--red)">⚠️ Reset</div>
+    <div id="reset-step1">
+      <div class="modal-note" id="reset-desc"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mid);margin-bottom:14px;">A backup will be saved automatically before anything is deleted.</div>
+      <div class="modal-btns">
+        <button class="m-cancel" onclick="closeReset()">Cancel</button>
+        <button class="m-delete" onclick="resetStep(2)">Yes, continue →</button>
+      </div>
+    </div>
+    <div id="reset-step2" style="display:none">
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);margin-bottom:14px;">Are you absolutely sure? This cannot be undone.<br><span style="color:var(--text-dim);font-size:10px;">(A backup will still be saved first)</span></div>
+      <div class="modal-btns">
+        <button class="m-cancel" onclick="resetStep(1)">← Go back</button>
+        <button class="m-delete" onclick="resetStep(3)">I'm sure →</button>
+      </div>
+    </div>
+    <div id="reset-step3" style="display:none">
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--red);margin-bottom:8px;">☠️ FINAL WARNING</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mid);margin-bottom:14px;">Type <span style="color:var(--red);font-weight:bold;">RESET</span> below to confirm.</div>
+      <input type="text" id="reset-confirm-input" placeholder="Type RESET" style="width:100%;background:var(--surface2);border:1px solid var(--red);border-radius:5px;color:var(--red);font-family:'DM Mono',monospace;font-size:13px;padding:8px 10px;margin-bottom:12px;outline:none;text-transform:uppercase;letter-spacing:2px;"/>
+      <div class="modal-btns">
+        <button class="m-cancel" onclick="resetStep(2)">← Go back</button>
+        <button class="m-delete" onclick="executeReset()">💥 RESET NOW</button>
+      </div>
+    </div>
+    <div id="reset-backup-info" style="display:none;margin-top:12px;padding:10px;background:var(--green-dim);border:1px solid rgba(34,197,94,0.2);border-radius:6px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);letter-spacing:1px;margin-bottom:4px;">✅ BACKUP SAVED</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mid);" id="reset-backup-time"></div>
+      <button onclick="downloadBackup()" style="margin-top:8px;width:100%;padding:7px;background:transparent;border:1px solid var(--green);border-radius:5px;color:var(--green);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">⬇ Download Backup File</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEBT EDIT MODAL -->
+
+<div class="overlay" id="debt-edit-overlay">
+  <div class="modal">
+    <div class="modal-title">💳 Edit Debt</div>
+    <div class="modal-note" id="debt-edit-name"></div>
+    <label class="modal-lbl">Original / Current Total Owed</label>
+    <input type="text" id="debt-edit-target" placeholder="e.g. 7365"/>
+    <label class="modal-lbl">Amount Already Paid</label>
+    <input type="text" id="debt-edit-paid" placeholder="e.g. 342.29"/>
+    <label class="modal-lbl">Note (optional — e.g. settled, negotiated)</label>
+    <input type="text" id="debt-edit-note" placeholder="e.g. Settled for $3,000"/>
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeDebtEdit()">Cancel</button>
+      <button class="m-confirm" onclick="confirmDebtEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT BILL MODAL -->
+
+<div class="overlay" id="edit-overlay">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Bill</div>
+    <label class="modal-lbl">Bill Name</label>
+    <input type="text" id="edit-label" placeholder="e.g. T-Mobile"/>
+    <label class="modal-lbl">Amount (e.g. -350.00)</label>
+    <input type="text" id="edit-amount" placeholder="-350.00"/>
+    <label class="modal-lbl">Note / Due Date</label>
+    <input type="text" id="edit-sub" placeholder="e.g. Due 25th"/>
+    <div class="modal-btns">
+      <button class="m-delete" onclick="deleteItem()">🗑 Remove</button>
+      <button class="m-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="m-confirm" onclick="confirmEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY MODAL -->
+
+<div class="overlay" id="pay-overlay">
+  <div class="modal">
+    <div class="modal-title">💸 Pay With Supplemental</div>
+    <div class="modal-note" id="pay-bill-lbl"></div>
+    <label class="modal-lbl">Income Source</label>
+    <select id="pay-src"><option>TikTok Shop</option><option>YouTube</option><option>DoorDash</option><option>Sip Studios</option></select>
+    <label class="modal-lbl">Amount Paid</label>
+    <input type="text" id="pay-amt" placeholder="e.g. 100"/>
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closePay()">Cancel</button>
+      <button class="m-confirm" onclick="confirmPay()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALLOC MODAL -->
+
+<div class="overlay" id="alloc-overlay">
+  <div class="modal">
+    <div class="modal-title" id="alloc-title">Allocate</div>
+    <div class="modal-note" id="alloc-note"></div>
+    <label class="modal-lbl">Amount</label>
+    <input type="text" id="alloc-amt" placeholder="e.g. 197.47"/>
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeAlloc()">Cancel</button>
+      <button class="m-confirm" onclick="confirmAlloc()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- SKIP MODAL -->
+
+<div class="overlay" id="skip-overlay">
+  <div class="modal">
+    <div class="modal-title">⏭ Skip or Forward</div>
+    <div class="modal-note" id="skip-bill-lbl"></div>
+    <label class="modal-lbl">What do you want to do?</label>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+      <button id="skip-skip-btn" onclick="confirmSkip('skip')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--green);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-align:left;">
+        ✓ SKIP IT — lowers this check's deficit<br>
+        <span style="color:var(--text-dim);font-size:9px;">Bill is skipped, you don't pay it this period</span>
+      </button>
+      <button id="skip-fwd-btn" onclick="confirmSkip('forward')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--gold);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-align:left;">
+        → FORWARD TO NEXT CHECK — raises next deficit<br>
+        <span style="color:var(--text-dim);font-size:9px;">Bill moves to next check and adds to that deficit</span>
+      </button>
+    </div>
+    <label class="modal-lbl">Reason (optional)</label>
+    <input type="text" id="skip-reason" placeholder="e.g. tight this check, slow month"/>
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeSkip()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SK='junior-v4';
+let S={
+  checked:{},collapsed:{},amounts:{},labels:{},subs:{},
+  hubPay:{},customItems:{},paidWith:{},
+  savings:{},debt:{},sipHours:{},ddSessions:{},varValues:{},
+  spendItems:{},ddCounts:{},
+  skipped:{},forwarded:{},forwarded_in:{},
+  debtTargets:{},debtNotes:{},
+  kenLateFees:{},
+};
+function load(){try{const d=JSON.parse(localStorage.getItem(SK));if(d)S={...S,...d};}catch(e){}}
+function save(){localStorage.setItem(SK,JSON.stringify(S));}
+
+const SIP_RATE=25,SIP_GOAL=300,DD_PER_WEEK=4;
+const DAYS=['Fri','Sat','Sun','Mon','Tue','Wed','Thu'];
+
+function buildWeeks(month){
+  // May 1 2026 is a Friday — weeks run Fri→Thu
+  const start=new Date(2026,4,1);
+  const ends={may:new Date(2026,4,31),jun:new Date(2026,5,30),jul:new Date(2026,6,31),aug:new Date(2026,7,20)};
+  const mStarts={may:new Date(2026,4,1),jun:new Date(2026,5,1),jul:new Date(2026,6,1),aug:new Date(2026,7,1)};
+  const end=ends[month],mStart=mStarts[month];
+  let weeks=[],cur=new Date(start),wi=0;
+  while(cur<=ends.aug){
+    const wEnd=new Date(cur);wEnd.setDate(wEnd.getDate()+6);
+    if(new Date(cur)<=end&&wEnd>=mStart)weeks.push({wi,label:`Week ${wi+1} · ${fmt(cur)} – ${fmt(wEnd)}`,start:new Date(cur)});
+    cur.setDate(cur.getDate()+7);wi++;
+  }
+  return weeks;
+}
+function fmt(d){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return m[d.getMonth()]+' '+d.getDate();}
+function fmtM(n){const a=Math.abs(n).toFixed(2);return n<0?'-$'+a:'+$'+a;}
+
+// MONTHS DATA
+const MONTHS={
+  may:{label:'MAY 2026',hub:[
+    {id:'may14',emoji:'🚛',title:'MAY 14TH — HUB CHECK #1',date:'May 14, 2026',defaultHub:1974.71,items:[
+      {id:'m14-sav',label:'Savings',sub:'10% · Switch 2 Goal',amount:'-197.47',t:'e'},
+      {id:'m14-dbt',label:'Debt Repayment',sub:'CCS $186 target',amount:'-342.29',t:'e'},
+      {id:'m14-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'m14-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'m14-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'m14-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'m14-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'m14-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'m14-twt',label:'Twitter Blue',sub:'Due 2nd',amount:'-8.53',t:'e'},
+      {id:'m14-ytp',label:'YouTube Premium',sub:'Due 6th',amount:'-25.00',t:'e'},
+      {id:'m14-amc',label:'AMC Stubs',sub:'Due 8th',amount:'-60.00',t:'e'},
+      {id:'m14-ado',label:'Adobe',sub:'Due 11th',amount:'-40.00',t:'e'},
+      {id:'m14-prg',label:'Progressive',sub:'Due 11th',amount:'-154.80',t:'e'},
+      {id:'m14-klw',label:'Klarna · Walmart OnePay',sub:'Due May 21 · 4 of 12 ($222)',amount:'-17.40',t:'e'},
+      {id:'m14-hlt',label:'Health Insurance',sub:'Due 1st · carried from prev check',amount:'-273.71',t:'e'},
+      {id:'m14-mam',label:'Mami Funds',sub:'Due 1st · carried from prev check',amount:'-100.00',t:'e'},
+      {id:'m14-ggl',label:'Google Subscription',sub:'Due 1st · carried from prev check',amount:'-21.60',t:'e'},
+    ]},
+    {id:'may28',emoji:'🚛',title:'MAY 28TH — HUB CHECK #2',date:'May 28, 2026',defaultHub:1974.71,items:[
+      {id:'m28-sav',label:'Savings',sub:'10% · Switch 2 Goal',amount:'-197.47',t:'e'},
+      {id:'m28-dbt',label:'Debt Repayment',sub:'PayPal target',amount:'-342.29',t:'e'},
+      {id:'m28-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'m28-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'m28-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'m28-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'m28-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'m28-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'m28-plt',label:'Planet Fitness',sub:'Due 17th',amount:'-32.00',t:'e'},
+      {id:'m28-ppl',label:'PayPal Credit',sub:'Due 22nd',amount:'-12.00',t:'e'},
+      {id:'m28-spt',label:'Spotify',sub:'Due 24th',amount:'-21.31',t:'e'},
+      {id:'m28-stu',label:'Studio',sub:'Due 25th',amount:'-300.00',t:'e'},
+      {id:'m28-tmb',label:'T-Mobile',sub:'Due 25th',amount:'-350.00',t:'e'},
+      {id:'m28-klc',label:'Klarna · Cinemark',sub:'Due May 27 · 4 of 4 ($44)',amount:'-10.66',t:'e'},
+    ]},
+  ],tiktok:[
+    {id:'tt-may7',label:'TikTok Payout',sub:'Thu May 7',t:'v'},
+    {id:'tt-may14',label:'TikTok Payout',sub:'Thu May 14',t:'v'},
+    {id:'tt-may21',label:'TikTok Payout',sub:'Thu May 21',t:'v'},
+    {id:'tt-may28',label:'TikTok Payout',sub:'Thu May 28',t:'v'},
+  ],youtube:[{id:'yt-may21',label:'YouTube AdSense',sub:'May 21st',t:'v'}]},
+
+  jun:{label:'JUNE 2026',hub:[
+    {id:'jun11',emoji:'🚛',title:'JUNE 11TH — HUB CHECK #3',date:'Jun 11, 2026 · 🎮 Switch 2 Funded!',defaultHub:1974.71,items:[
+      {id:'j11-sav',label:'Savings',sub:'10% · MacBooks goal starts',amount:'-197.47',t:'e'},
+      {id:'j11-dbt',label:'Debt Repayment',sub:'Apple Card target',amount:'-342.29',t:'e'},
+      {id:'j11-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'j11-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'j11-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'j11-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'j11-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'j11-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'j11-hlt',label:'Health Insurance',sub:'Due 1st',amount:'-273.71',t:'e'},
+      {id:'j11-mam',label:'Mami Funds',sub:'Due 1st',amount:'-100.00',t:'e'},
+      {id:'j11-ggl',label:'Google Subscription',sub:'Due 1st',amount:'-21.60',t:'e'},
+      {id:'j11-twt',label:'Twitter Blue',sub:'Due 2nd',amount:'-8.53',t:'e'},
+      {id:'j11-ytp',label:'YouTube Premium',sub:'Due 6th',amount:'-25.00',t:'e'},
+      {id:'j11-amc',label:'AMC Stubs',sub:'Due 8th',amount:'-60.00',t:'e'},
+      {id:'j11-ado',label:'Adobe',sub:'Due 11th',amount:'-40.00',t:'e'},
+      {id:'j11-prg',label:'Progressive',sub:'Due 11th',amount:'-154.80',t:'e'},
+      {id:'j11-klt',label:'Klarna · Ticketmaster',sub:'Due Jun 1 · 5 of 6 ($70)',amount:'-11.79',t:'e'},
+      {id:'j11-klny',label:'Klarna · NY International Auto ⚠️',sub:'Due Jun 7 · FAILED — pay ASAP · 3 of 3 ($111)',amount:'-26.44',t:'e'},
+      {id:'j11-klh',label:'Klarna · Horizon Health',sub:'Due Jun 10 · 4 of 6 ($307)',amount:'-50.07',t:'e'},
+      {id:'j11-kln',label:'Klarna · Nintendo',sub:'Due Jun 10 · 4 of 6 ($78)',amount:'-12.71',t:'e'},
+    ]},
+    {id:'jun25',emoji:'🚛',title:'JUNE 25TH — HUB CHECK #4',date:'Jun 25, 2026',defaultHub:1974.71,items:[
+      {id:'j25-sav',label:'Savings',sub:'10% · MacBooks in progress',amount:'-197.47',t:'e'},
+      {id:'j25-dbt',label:'Debt Repayment',sub:'Capital One start',amount:'-342.29',t:'e'},
+      {id:'j25-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'j25-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'j25-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'j25-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'j25-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'j25-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'j25-plt',label:'Planet Fitness',sub:'Due 17th',amount:'-32.00',t:'e'},
+      {id:'j25-ppl',label:'PayPal Credit',sub:'Due 22nd',amount:'-12.00',t:'e'},
+      {id:'j25-spt',label:'Spotify',sub:'Due 24th',amount:'-21.31',t:'e'},
+      {id:'j25-stu',label:'Studio',sub:'Due 25th',amount:'-300.00',t:'e'},
+      {id:'j25-tmb',label:'T-Mobile',sub:'Due 25th',amount:'-350.00',t:'e'},
+    ]},
+  ],kensington:{items:[
+    {id:'kj-j',label:'Collect — Jonathan',amount:'+850.00',t:'i'},
+    {id:'kj-c',label:'Collect — Christopher',amount:'+400.00',t:'i'},
+    {id:'kj-h',label:'Collect — Hario',amount:'+600.00',t:'i'},
+    {id:'kj-r',label:'Pay — Kensington Rent',sub:'Due 5th',amount:'-1585.00',t:'e'},
+    {id:'kj-p',label:'Pay — PSEG',sub:'Due 8th',amount:'-150.00',t:'e'},
+    {id:'kj-f',label:'Pay — Verizon FiOS',sub:'Due 10th',amount:'-110.00',t:'e'},
+  ]},tiktok:[
+    {id:'tt-j4',label:'TikTok Payout',sub:'Thu Jun 4',t:'v'},
+    {id:'tt-j11',label:'TikTok Payout',sub:'Thu Jun 11',t:'v'},
+    {id:'tt-j18',label:'TikTok Payout',sub:'Thu Jun 18',t:'v'},
+    {id:'tt-j25',label:'TikTok Payout',sub:'Thu Jun 25',t:'v'},
+  ],youtube:[{id:'yt-jun21',label:'YouTube AdSense',sub:'Jun 21st',t:'v'}]},
+
+  jul:{label:'JULY 2026',hub:[
+    {id:'jul9',emoji:'🚛',title:'JULY 9TH — HUB CHECK #5',date:'Jul 9, 2026',defaultHub:1974.71,items:[
+      {id:'l9-sav',label:'Savings',sub:'10% · MacBooks in progress',amount:'-197.47',t:'e'},
+      {id:'l9-dbt',label:'Debt Repayment',sub:'Capital One',amount:'-342.29',t:'e'},
+      {id:'l9-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'l9-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'l9-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'l9-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'l9-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'l9-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'l9-hlt',label:'Health Insurance',sub:'Due 1st',amount:'-273.71',t:'e'},
+      {id:'l9-mam',label:'Mami Funds',sub:'Due 1st',amount:'-100.00',t:'e'},
+      {id:'l9-ggl',label:'Google Subscription',sub:'Due 1st',amount:'-21.60',t:'e'},
+      {id:'l9-twt',label:'Twitter Blue',sub:'Due 2nd',amount:'-8.53',t:'e'},
+      {id:'l9-ytp',label:'YouTube Premium',sub:'Due 6th',amount:'-25.00',t:'e'},
+      {id:'l9-amc',label:'AMC Stubs',sub:'Due 8th',amount:'-60.00',t:'e'},
+      {id:'l9-ado',label:'Adobe',sub:'Due 11th',amount:'-40.00',t:'e'},
+      {id:'l9-prg',label:'Progressive',sub:'Due 11th',amount:'-154.80',t:'e'},
+    ]},
+    {id:'jul23',emoji:'🚛',title:'JULY 23RD — HUB CHECK #6',date:'Jul 23, 2026',defaultHub:1974.71,items:[
+      {id:'l23-sav',label:'Savings',sub:'10% · MacBooks in progress',amount:'-197.47',t:'e'},
+      {id:'l23-dbt',label:'Debt Repayment',sub:'Capital One',amount:'-342.29',t:'e'},
+      {id:'l23-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'l23-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'l23-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'l23-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'l23-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'l23-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'l23-plt',label:'Planet Fitness',sub:'Due 17th',amount:'-32.00',t:'e'},
+      {id:'l23-ppl',label:'PayPal Credit',sub:'Due 22nd',amount:'-12.00',t:'e'},
+      {id:'l23-spt',label:'Spotify',sub:'Due 24th',amount:'-21.31',t:'e'},
+      {id:'l23-stu',label:'Studio',sub:'Due 25th',amount:'-300.00',t:'e'},
+      {id:'l23-tmb',label:'T-Mobile',sub:'Due 25th',amount:'-350.00',t:'e'},
+    ]},
+  ],kensington:{items:[
+    {id:'kl-j',label:'Collect — Jonathan',amount:'+850.00',t:'i'},
+    {id:'kl-c',label:'Collect — Christopher',amount:'+400.00',t:'i'},
+    {id:'kl-h',label:'Collect — Hario',amount:'+600.00',t:'i'},
+    {id:'kl-r',label:'Pay — Kensington Rent',sub:'Due 5th',amount:'-1585.00',t:'e'},
+    {id:'kl-p',label:'Pay — PSEG',sub:'Due 8th',amount:'-150.00',t:'e'},
+    {id:'kl-f',label:'Pay — Verizon FiOS',sub:'Due 10th',amount:'-110.00',t:'e'},
+  ]},tiktok:[
+    {id:'tt-l2',label:'TikTok Payout',sub:'Thu Jul 2',t:'v'},
+    {id:'tt-l9',label:'TikTok Payout',sub:'Thu Jul 9',t:'v'},
+    {id:'tt-l16',label:'TikTok Payout',sub:'Thu Jul 16',t:'v'},
+    {id:'tt-l23',label:'TikTok Payout',sub:'Thu Jul 23',t:'v'},
+    {id:'tt-l30',label:'TikTok Payout',sub:'Thu Jul 30',t:'v'},
+  ],youtube:[{id:'yt-jul21',label:'YouTube AdSense',sub:'Jul 21st',t:'v'}]},
+
+  aug:{label:'AUGUST 2026',hub:[
+    {id:'aug6',emoji:'🚛',title:'AUGUST 6TH — HUB CHECK #7',date:'Aug 6, 2026',defaultHub:1974.71,items:[
+      {id:'a6-sav',label:'Savings',sub:'10% · MacBooks in progress',amount:'-197.47',t:'e'},
+      {id:'a6-dbt',label:'Debt Repayment',sub:'Capital One',amount:'-342.29',t:'e'},
+      {id:'a6-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'a6-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'a6-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'a6-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'a6-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'a6-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'a6-hlt',label:'Health Insurance',sub:'Due 1st',amount:'-273.71',t:'e'},
+      {id:'a6-mam',label:'Mami Funds',sub:'Due 1st',amount:'-100.00',t:'e'},
+      {id:'a6-ggl',label:'Google Subscription',sub:'Due 1st',amount:'-21.60',t:'e'},
+      {id:'a6-twt',label:'Twitter Blue',sub:'Due 2nd',amount:'-8.53',t:'e'},
+      {id:'a6-ytp',label:'YouTube Premium',sub:'Due 6th',amount:'-25.00',t:'e'},
+      {id:'a6-amc',label:'AMC Stubs',sub:'Due 8th',amount:'-60.00',t:'e'},
+      {id:'a6-ado',label:'Adobe',sub:'Due 11th',amount:'-40.00',t:'e'},
+      {id:'a6-prg',label:'Progressive',sub:'Due 11th',amount:'-154.80',t:'e'},
+    ]},
+    {id:'aug20',emoji:'🚛',title:'AUGUST 20TH — HUB CHECK #8',date:'Aug 20, 2026 · 💻 MacBooks Funded!',defaultHub:1974.71,items:[
+      {id:'a20-sav',label:'Savings',sub:'10% · 💻 MacBooks funded!',amount:'-197.47',t:'e'},
+      {id:'a20-dbt',label:'Debt Repayment',sub:'Capital One',amount:'-342.29',t:'e'},
+      {id:'a20-spd',label:'Spendings',sub:'Budget $200',amount:'-200.00',t:'e',isSpendings:true},
+      {id:'a20-gas',label:'Gas',amount:'-100.00',t:'e'},
+      {id:'a20-mer',label:'Mercy',amount:'-100.00',t:'e'},
+      {id:'a20-sin',label:'Sinclair Rent',amount:'-825.00',t:'e'},
+      {id:'a20-gro',label:'Groceries',amount:'-200.00',t:'e'},
+      {id:'a20-ups',label:'Upstart Loan',amount:'-26.00',t:'e'},
+      {id:'a20-plt',label:'Planet Fitness',sub:'Due 17th',amount:'-32.00',t:'e'},
+      {id:'a20-ppl',label:'PayPal Credit',sub:'Due 22nd',amount:'-12.00',t:'e'},
+      {id:'a20-spt',label:'Spotify',sub:'Due 24th',amount:'-21.31',t:'e'},
+      {id:'a20-stu',label:'Studio',sub:'Due 25th',amount:'-300.00',t:'e'},
+      {id:'a20-tmb',label:'T-Mobile',sub:'Due 25th',amount:'-350.00',t:'e'},
+    ]},
+  ],kensington:{items:[
+    {id:'ka-j',label:'Collect — Jonathan',amount:'+850.00',t:'i'},
+    {id:'ka-c',label:'Collect — Christopher',amount:'+400.00',t:'i'},
+    {id:'ka-h',label:'Collect — Hario',amount:'+600.00',t:'i'},
+    {id:'ka-r',label:'Pay — Kensington Rent',sub:'Due 5th',amount:'-1585.00',t:'e'},
+    {id:'ka-p',label:'Pay — PSEG',sub:'Due 8th',amount:'-150.00',t:'e'},
+    {id:'ka-f',label:'Pay — Verizon FiOS',sub:'Due 10th',amount:'-110.00',t:'e'},
+  ]},tiktok:[
+    {id:'tt-a6',label:'TikTok Payout',sub:'Thu Aug 6',t:'v'},
+    {id:'tt-a13',label:'TikTok Payout',sub:'Thu Aug 13',t:'v'},
+    {id:'tt-a20',label:'TikTok Payout',sub:'Thu Aug 20',t:'v'},
+  ],youtube:[{id:'yt-aug21',label:'YouTube AdSense',sub:'Aug 21st',t:'v'}]},
+};
+
+const SAV_GOALS=[
+  {id:'sg-switch',name:'🎮 Switch 2 + Game',target:570,note:'For nephew · deadline mid-June'},
+  {id:'sg-mac',name:'💻 MacBooks ×2 (Student)',target:1198,note:'512GB · Apple Education Store'},
+  {id:'sg-anni',name:'✈️ Anniversary Trip',target:2500,note:'Early August · with girlfriend'},
+  {id:'sg-japan',name:'🗾 Japan Trip',target:10000,note:'2027 · both of you'},
+  {id:'sg-turkey',name:'💈 Hair Transplant · Turkey',target:3500,note:'After Japan'},
+];
+const DEBT_GOALS=[
+  // CREDIT — tackle first for score
+  {id:'dg-ccs',name:'💳 Credit Collection Services',target:186,note:'Pay first — fastest credit score boost',cat:'credit'},
+  {id:'dg-pp',name:'💳 SYNCB/PayPal',target:252.96,note:'Pay second',cat:'credit'},
+  {id:'dg-apple',name:'💳 Apple Card (GS Bank)',target:544,note:'Pay third',cat:'credit'},
+  {id:'dg-cap',name:'💳 Capital One (Collections)',target:7365,note:'Main target · negotiate settlement Nov 2026',cat:'credit'},
+  // PERSONAL — after credit is clean
+  {id:'dg-harold',name:'👤 Harold',target:200,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-sirak',name:'👤 Sirak',target:100,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-melissa',name:'👤 Melissa',target:106,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-renz',name:'👤 Renz',target:378,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-russell',name:'👤 Russell',target:683,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-doris',name:'👤 Doris',target:800,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-tiafanny',name:'👤 Tía Fanny',target:815,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-tioWilmer',name:'👤 Tío Wilmer',target:1000,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-tico',name:'👤 Tico',target:1000,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-tianubia',name:'👤 Tía Nubia',target:1220,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-kevin',name:'👤 Kevin',target:1144.85,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-primopaguada',name:'👤 Primo Paguada',target:5000,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-donjose',name:'👤 Don José',target:4800,note:'Personal · flexible',cat:'personal'},
+  {id:'dg-karla',name:'👤 Karla',target:12055,note:'Personal · largest · tackle last',cat:'personal'},
+];
+
+let currentMonth='may';
+let payTargetId='',allocTargetId='',allocType='';
+let editItemId='',editSecId='',editIsCustom=false;
+
+// HELPERS
+function getAmt(item){
+  if(S.amounts[item.id]!==undefined)return parseFloat(S.amounts[item.id])||0;
+  if(!item.amount)return 0;
+  return parseFloat(item.amount.replace(',',''))||0;
+}
+function getLabel(item){return S.labels[item.id]||item.label;}
+function getSub(item){return S.subs[item.id]!==undefined?S.subs[item.id]:(item.sub||'');}
+function getCustom(sid){return S.customItems[sid]||[];}
+function isHidden(id){return (S.customItems['__hidden']||[]).includes(id);}
+function getAllItems(sec){return [...sec.items,...getCustom(sec.id)].filter(i=>!isHidden(i.id));}
+
+function getSipEarned(month){
+  const weeks=buildWeeks(month);let total=0;
+  weeks.forEach(w=>DAYS.forEach((_,di)=>{
+    total+=(parseFloat(S.sipHours[`sip-${month}-${w.wi}-${di}`])||0)*SIP_RATE;
+  }));
+  return total;
+}
+function getDDTotal(month){
+  const weeks=buildWeeks(month);let total=0;
+  weeks.forEach(w=>{
+    const cnt=getDDCount(month,w.wi);
+    for(let s=0;s<cnt;s++)total+=(parseFloat((S.ddSessions[`dd-${month}-${w.wi}-${s}`]||{}).amt)||0);
+  });
+  return total;
+}
+function getSpendTotal(sid){return(S.spendItems[sid]||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0);}
+
+function calcHubRemaining(sec,month){
+  const hub=S.hubPay[sec.id]!==undefined?parseFloat(S.hubPay[sec.id]):sec.defaultHub;
+  const allItems=getAllItems(sec);
+  const fwdIn=S.forwarded_in[sec.id]||[];
+  const paidOut=allItems.filter(i=>i.t==='e'&&S.checked[i.id]&&!S.skipped[i.id]&&!S.forwarded[i.id]).reduce((s,i)=>s+Math.abs(getAmt(i)),0);
+  const fwdPaid=fwdIn.filter(i=>S.checked['fwd-'+i.id]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+  return hub-paidOut-fwdPaid;
+}
+function calcDeficit(sec,month){
+  const hub=S.hubPay[sec.id]!==undefined?parseFloat(S.hubPay[sec.id]):sec.defaultHub;
+  const allItems=getAllItems(sec);
+  const fwdIn=S.forwarded_in[sec.id]||[];
+  // exclude skipped and forwarded items from expenses
+  const exp=allItems.filter(i=>i.t==='e'&&!S.skipped[i.id]&&!S.forwarded[i.id]).reduce((s,i)=>s+Math.abs(getAmt(i)),0);
+  // add forwarded-in items to expenses
+  const fwdExp=fwdIn.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+  const m=MONTHS[month];
+  const supp=getSipEarned(month)+getDDTotal(month)
+    +m.tiktok.reduce((s,i)=>s+(parseFloat(S.varValues[i.id])||0),0)
+    +m.youtube.reduce((s,i)=>s+(parseFloat(S.varValues[i.id])||0),0);
+  return hub+supp-exp-fwdExp;
+}
+
+// PAGE
+function switchPage(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  el.classList.add('active');
+  if(p==='savings')renderSavings();
+  if(p==='debt')renderDebt();
+}
+function switchMonth(m){currentMonth=m;render();}
+
+// RENDER
+function render(){
+  const m=MONTHS[currentMonth];
+  const weeks=buildWeeks(currentMonth);
+  let html='',totalCb=0,checkedCb=0;
+
+  // KENSINGTON FIRST — always first week of month
+  if(m.kensington){
+    const kenId='ken-'+currentMonth;
+    const isOpen=!S.collapsed[kenId];
+    const mo=m.label.split(' ')[0];
+    const tenants=[
+      {id:`ken-${currentMonth}-jonathan`,name:'Jonathan',amount:850},
+      {id:`ken-${currentMonth}-christopher`,name:'Christopher',amount:400},
+      {id:`ken-${currentMonth}-hario`,name:'Hario',amount:600},
+    ];
+    const kenBills=[
+      {id:`ken-${currentMonth}-rent`,name:'Kensington Rent',amount:1585,due:'5th'},
+      {id:`ken-${currentMonth}-pseg`,name:'PSEG',amount:150,due:'8th'},
+      {id:`ken-${currentMonth}-fios`,name:'Verizon FiOS',amount:110,due:'10th'},
+    ];
+    const lateFees=S.kenLateFees||{};
+    const totalIn=tenants.reduce((s,t)=>{
+      const ov=S.amounts[t.id];
+      const base=ov!==undefined?parseFloat(ov)||0:t.amount;
+      const lf=(lateFees[t.id+'_late']?35:0)+(lateFees[t.id+'_superlate']?50:0);
+      return s+base+lf;
+    },0);
+    const totalOut=kenBills.reduce((s,b)=>{
+      const ov=S.amounts[b.id];
+      return s+(ov!==undefined?parseFloat(ov)||0:b.amount);
+    },0);
+    const kenNet=totalIn-totalOut;
+    const allChecked=[...tenants,...kenBills].filter(i=>S.checked[i.id]).length;
+    const allTotal=tenants.length+kenBills.length;
+    totalCb+=allTotal;checkedCb+=allChecked;
+
+    html+=`<div class="section">
+      <div class="sec-head ${isOpen?'open':''}" onclick="toggleSec('${kenId}')">
+        <span class="sec-emoji">🏢</span>
+        <div class="sec-info">
+          <div class="sec-title" style="color:var(--purple)">145 KENSINGTON · ${mo}</div>
+          <div class="sec-meta">Collect from tenants · Pay rent + utilities</div>
+        </div>
+        <span class="sec-badge" style="color:${kenNet>=0?'var(--green)':'var(--red)'}">NET ${kenNet>=0?'+':'-'}$${Math.abs(kenNet).toFixed(0)}</span>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </div>
+      <div class="sec-body ${isOpen?'open':''}">
+        <div class="ken-sum">
+          <div class="ken-row"><span>Total Collected</span><span style="color:var(--green)">+$${totalIn.toFixed(2)}</span></div>
+          <div class="ken-row"><span>Total Bills</span><span style="color:var(--red)">-$${totalOut.toFixed(2)}</span></div>
+          <div class="ken-row total"><span>NET THIS MONTH</span><span style="color:${kenNet>=0?'var(--green)':'var(--red)'}">${kenNet>=0?'+':'-'}$${Math.abs(kenNet).toFixed(2)}</span></div>
+        </div>
+        <div style="padding:8px 13px 4px;background:rgba(34,197,94,0.04);border-bottom:1px solid var(--border);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);letter-spacing:2px;margin-bottom:4px;">💰 RECEIVED</div>
+        </div>`;
+
+    tenants.forEach(t=>{
+      const checked=S.checked[t.id];
+      const dateKey=`ken-date-${t.id}`;
+      const dateVal=S.varValues[dateKey]||'';
+      const amtOv=S.amounts[t.id]!==undefined?S.amounts[t.id]:t.amount;
+      const isLate=lateFees[t.id+'_late'];
+      const isSuperLate=lateFees[t.id+'_superlate'];
+      const feeTotal=(isLate?35:0)+(isSuperLate?50:0);
+      html+=`<div class="item ${checked?'done':''} inc-row" style="flex-wrap:wrap;gap:6px;">
+        <div class="cb" onclick="toggleItem('${t.id}');event.stopPropagation()" style="cursor:pointer;flex-shrink:0">${checked?'✓':''}</div>
+        <div class="item-body" onclick="toggleItem('${t.id}')" style="cursor:pointer;min-width:80px;">
+          <div class="item-label">${t.name}</div>
+          ${dateVal?`<div class="item-sub">Received ${dateVal}</div>`:`<div class="item-sub" style="color:var(--text-dim)">Log date received</div>`}
+          ${feeTotal>0?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--red);margin-top:2px;">${isLate?'⚠️ Late +$35':''}${isSuperLate?' 🔴 Super Late +$50':''}</div>`:''}
+        </div>
+        <div class="item-right" style="align-items:flex-end;gap:4px;">
+          <input class="edit-amt pos" type="text" value="${amtOv}" style="color:var(--green);width:70px;"
+            onchange="S.amounts['${t.id}']=this.value;save();render();" onclick="event.stopPropagation()"/>
+          <input class="dd-date-input" type="text" placeholder="Jun 1" value="${dateVal}" style="width:65px;"
+            onchange="S.varValues['${dateKey}']=this.value;save();render();" onclick="event.stopPropagation()"/>
+        </div>
+        <div style="width:100%;padding:0 0 4px 29px;display:flex;gap:6px;">
+          <span style="font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid;${isLate?'background:rgba(239,68,68,0.2);color:var(--red);border-color:rgba(239,68,68,0.4);':'background:var(--surface2);color:var(--text-dim);border-color:var(--border);'}"
+            onclick="toggleLateFee('${t.id}','late');event.stopPropagation()">⚠️ Late Fee ${isLate?'✓ +$35':'+$35'}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid;${isSuperLate?'background:rgba(239,68,68,0.3);color:var(--red);border-color:rgba(239,68,68,0.5);':'background:var(--surface2);color:var(--text-dim);border-color:var(--border);'}"
+            onclick="toggleLateFee('${t.id}','superlate');event.stopPropagation()">🔴 Super Late ${isSuperLate?'✓ +$50':'+$50'}</span>
+        </div>
+      </div>`;
+    });
+
+    html+=`<div style="padding:8px 13px 4px;background:rgba(239,68,68,0.04);border-bottom:1px solid var(--border);border-top:1px solid var(--border);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--red);letter-spacing:2px;margin-bottom:4px;">📋 BILLS TO PAY</div>
+        </div>`;
+
+    kenBills.forEach(b=>{
+      const checked=S.checked[b.id];
+      html+=`<div class="item ${checked?'done':''} exp-row">
+        <div class="cb" onclick="toggleItem('${b.id}');event.stopPropagation()" style="cursor:pointer">${checked?'✓':''}</div>
+        <div class="item-body" onclick="toggleItem('${b.id}')" style="cursor:pointer">
+          <div class="item-label">${b.name}</div>
+          <div class="item-sub">Due ${b.due}</div>
+        </div>
+        <div class="item-right">
+          <input class="edit-amt" type="text" value="${S.amounts[b.id]!==undefined?S.amounts[b.id]:'-'+b.amount}" style="width:80px;"
+            onchange="S.amounts['${b.id}']=this.value;save();render();" onclick="event.stopPropagation()"/>
+          <div class="item-btns">
+            <span class="ibtn ibtn-edit" onclick="openEdit('${b.id}','${kenId}',false);event.stopPropagation()">✏️</span>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    html+=`</div></div>`;
+  }
+
+  // HUB CHECKS
+  m.hub.forEach(sec=>{
+    const allItems=getAllItems(sec);
+    const fixedItems=allItems.filter(i=>i.t!=='v');
+    const sc=fixedItems.filter(i=>S.checked[i.id]).length;
+    totalCb+=fixedItems.length;checkedCb+=sc;
+    const isOpen=!S.collapsed[sec.id];
+    const hub=S.hubPay[sec.id]!==undefined?parseFloat(S.hubPay[sec.id]):sec.defaultHub;
+    const def=calcDeficit(sec,currentMonth);
+    const rem=calcHubRemaining(sec,currentMonth);
+
+    html+=`<div class="section">
+      <div class="sec-head ${isOpen?'open':''}" onclick="toggleSec('${sec.id}')">
+        <span class="sec-emoji">${sec.emoji}</span>
+        <div class="sec-info"><div class="sec-title" style="color:var(--gold)">${sec.title}</div><div class="sec-meta">${sec.date}</div></div>
+        <span class="sec-badge" style="color:var(--gold)">${sc}/${fixedItems.length}</span>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </div>
+      <div class="sec-body ${isOpen?'open':''}">
+        <div class="def-card"><div class="def-grid">
+          <div class="def-item">
+            <div class="def-lbl">HUB PAY</div>
+            <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--green);font-family:'DM Mono',monospace;font-size:12px;width:100%;outline:none;padding:2px 0;" value="${hub}" onchange="S.hubPay['${sec.id}']=parseFloat(this.value)||0;save();render();" onclick="event.stopPropagation()"/>
+          </div>
+          <div class="def-item">
+            <div class="def-lbl">REMAINING</div>
+            <div class="def-val ${rem>=0?'gold':'neg'}">${rem>=0?'$'+rem.toFixed(2):'-$'+Math.abs(rem).toFixed(2)}</div>
+          </div>
+          <div class="def-item">
+            <div class="def-lbl">${def>=0?'SURPLUS':'DEFICIT'}</div>
+            <div class="def-val ${def>=0?'pos':'neg'}">${def>=0?'+$'+def.toFixed(2):'-$'+Math.abs(def).toFixed(2)}</div>
+          </div>
+        </div></div>`;
+
+    allItems.forEach(item=>{
+      const checked=S.checked[item.id];
+      const isCustom=!!getCustom(sec.id).find(c=>c.id===item.id);
+      const lbl=getLabel(item);
+      const sub=getSub(item);
+      const rawAmt=S.amounts[item.id]!==undefined?S.amounts[item.id]:item.amount;
+      const numAmt=parseFloat(rawAmt)||0;
+      const paid=S.paidWith[item.id];
+
+      if(item.isSpendings){
+        // SPENDINGS BREAKDOWN
+        const budget=Math.abs(numAmt);
+        const spent=getSpendTotal(item.id);
+        const left=budget-spent;
+        const pct=Math.min(100,(spent/budget)*100);
+        const overBudget=spent>budget;
+        const fillColor=overBudget?'var(--red)':pct>75?'#f59e0b':'var(--green)';
+        const spendItems=S.spendItems[item.id]||[];
+
+        html+=`<div class="spend-section">
+          <div class="item ${checked?'done':''} exp-row" style="cursor:default">
+            <div class="cb" onclick="toggleItem('${item.id}')" style="cursor:pointer">${checked?'✓':''}</div>
+            <div class="item-body" onclick="toggleItem('${item.id}')" style="cursor:pointer">
+              <div class="item-label">${lbl}</div>
+              ${sub?`<div class="item-sub">${sub}</div>`:''}
+              ${paid?`<div class="paid-tag">💸 ${paid.source} · $${paid.amount}</div>`:''}
+            </div>
+            <div class="item-right">
+              <div class="item-amount">-$${budget.toFixed(2)}</div>
+              <div class="item-btns">
+                <span class="ibtn ibtn-edit" onclick="openEdit('${item.id}','${sec.id}',${isCustom});event.stopPropagation()">✏️ edit</span>
+                ${!paid?`<span class="ibtn ibtn-pay" onclick="openPay('${item.id}','${lbl}');event.stopPropagation()">💸 supp</span>`:''}
+                ${isCustom?`<span class="ibtn ibtn-rm" onclick="deleteCustom('${sec.id}','${item.id}');event.stopPropagation()">✕</span>`:''}
+              </div>
+            </div>
+          </div>
+          <div class="spend-header">
+            <div class="spend-header-top">
+              <span class="spend-title">SPENDING BREAKDOWN</span>
+              <span class="spend-budget" style="color:${overBudget?'var(--red)':'var(--text-mid)'}">$${spent.toFixed(2)} / $${budget.toFixed(2)}</span>
+            </div>
+            <div class="spend-track"><div class="spend-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+            <div class="spend-leftover" style="color:${overBudget?'var(--red)':'var(--green)'}">
+              ${overBudget?`⚠️ Over budget by $${(spent-budget).toFixed(2)}`:`✓ $${left.toFixed(2)} left`}
+            </div>
+          </div>
+          ${spendItems.map(si=>`
+            <div class="spend-entry">
+              <span class="spend-entry-label">${si.label}</span>
+              <span class="spend-entry-date">${si.date||''}</span>
+              <span class="spend-entry-amt">$${parseFloat(si.amount).toFixed(2)}</span>
+              <span class="spend-entry-rm" onclick="rmSpendItem('${item.id}','${si.id}')">✕</span>
+            </div>`).join('')}
+          <div class="spend-add-row">
+            <input class="spend-add-input" type="text" id="sp-lbl-${item.id}" placeholder="e.g. Coffee"/>
+            <input class="spend-add-input amt" type="text" id="sp-amt-${item.id}" placeholder="$25"/>
+            <input class="spend-add-input dt" type="text" id="sp-dt-${item.id}" placeholder="May 14"/>
+            <button class="spend-add-btn" onclick="addSpendItem('${item.id}')">+</button>
+          </div>
+        </div>`;
+      } else {
+        // REGULAR ITEM
+        const skipped=S.skipped[item.id];
+        const forwarded=S.forwarded[item.id];
+        const skipClass=skipped?'item-skipped':forwarded?'item-forwarded':'';
+        html+=`<div class="item ${checked?'done':''} exp-row ${skipClass}">
+          <div class="cb" onclick="toggleItem('${item.id}');event.stopPropagation()" style="cursor:pointer">${checked?'✓':''}</div>
+          <div class="item-body" onclick="toggleItem('${item.id}')" style="cursor:pointer">
+            <div class="item-label" style="${skipped?'text-decoration:line-through;color:var(--text-dim)':forwarded?'color:var(--gold)':''}">${lbl}</div>
+            ${sub?`<div class="item-sub">${sub}</div>`:''}
+            ${paid?`<div class="paid-tag">💸 ${paid.source} · $${paid.amount}</div>`:''}
+            ${skipped?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--green);margin-top:2px;">⏭ SKIPPED${skipped.reason?' · '+skipped.reason:''}</div>`:''}
+            ${forwarded?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--gold);margin-top:2px;">→ FORWARDED TO NEXT CHECK${forwarded.reason?' · '+forwarded.reason:''}</div>`:''}
+          </div>
+          <div class="item-right">
+            <div class="item-amount ${numAmt>0?'pos':''}">${numAmt>0?'+':'-'}$${Math.abs(numAmt).toFixed(2)}</div>
+            <div class="item-btns">
+              <span class="ibtn ibtn-edit" onclick="openEdit('${item.id}','${sec.id}',${isCustom});event.stopPropagation()">✏️</span>
+              ${item.t==='e'&&!paid&&!skipped&&!forwarded?`<span class="ibtn ibtn-pay" onclick="openPay('${item.id}','${lbl}');event.stopPropagation()">💸</span>`:''}
+              ${item.t==='e'&&!skipped&&!forwarded?`<span class="ibtn" style="background:rgba(100,100,100,0.1);color:var(--text-mid);border:1px solid var(--border);" onclick="openSkip('${item.id}','${lbl}','${sec.id}');event.stopPropagation()">⏭</span>`:''}
+              ${skipped||forwarded?`<span class="ibtn ibtn-rm" onclick="clearSkip('${item.id}');event.stopPropagation()">↩</span>`:''}
+              ${isCustom?`<span class="ibtn ibtn-rm" onclick="deleteCustom('${sec.id}','${item.id}');event.stopPropagation()">✕</span>`:''}
+            </div>
+          </div>
+        </div>`;
+      }
+    });
+
+    html+=`<div class="add-btn" onclick="toggleAddForm('${sec.id}')">＋ Add expense</div>
+      <div class="add-form" id="af-${sec.id}">
+        <input type="text" id="al-${sec.id}" placeholder="Expense name"/>
+        <div class="add-form-row">
+          <input type="text" id="aa-${sec.id}" placeholder="Amount e.g. -75.00"/>
+          <input type="text" id="as-${sec.id}" placeholder="Note e.g. Due 15th"/>
+        </div>
+        <button class="add-submit" onclick="addCustom('${sec.id}')">ADD</button>
+      </div>`;
+
+    // FORWARDED-IN items from previous check
+    const fwdIn=S.forwarded_in[sec.id]||[];
+    if(fwdIn.length>0){
+      html+=`<div style="padding:8px 13px;background:rgba(245,166,35,0.05);border-top:1px solid var(--border);">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:1px;margin-bottom:6px;">→ FORWARDED FROM PREVIOUS CHECK</div>`;
+      fwdIn.forEach(fi=>{
+        const fwdChecked=S.checked['fwd-'+fi.id];
+        html+=`<div class="item ${fwdChecked?'done':''}" style="background:rgba(245,166,35,0.04);padding:9px 0;" onclick="toggleItem('fwd-${fi.id}')">
+          <div class="cb">${fwdChecked?'✓':''}</div>
+          <div class="item-body">
+            <div class="item-label" style="color:var(--gold)">${fi.label}</div>
+            <div class="item-sub">${fi.sub||''} · forwarded${fi.reason?' ('+fi.reason+')':''}</div>
+          </div>
+          <div class="item-right">
+            <div class="item-amount">-$${parseFloat(fi.amount).toFixed(2)}</div>
+            <span class="ibtn ibtn-rm" onclick="removeFwdIn('${sec.id}','${fi.id}');event.stopPropagation()">✕</span>
+          </div>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+
+    html+=`</div></div>`;
+  });
+
+  // SIP
+  {
+    const sipEarned=getSipEarned(currentMonth);
+    const sipPct=Math.min(100,(sipEarned/SIP_GOAL)*100).toFixed(0);
+    const isOpen=!S.collapsed['sip-'+currentMonth];
+    html+=`<div class="section">
+      <div class="sec-head ${isOpen?'open':''}" onclick="toggleSec('sip-${currentMonth}')">
+        <span class="sec-emoji">🎙️</span>
+        <div class="sec-info"><div class="sec-title" style="color:var(--pink)">SIP STUDIOS · ${m.label.split(' ')[0]}</div><div class="sec-meta">$25/hr · Goal $300/mo</div></div>
+        <span class="sec-badge" style="color:var(--pink)">$${sipEarned.toFixed(0)}/$${SIP_GOAL}</span>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </div>
+      <div class="sec-body ${isOpen?'open':''}">
+        <div class="sip-header">
+          <div class="sip-prog-top"><span style="color:var(--pink)">SELF-FUND GOAL</span><span>$${sipEarned.toFixed(2)} / $${SIP_GOAL}</span></div>
+          <div class="sip-track"><div class="sip-fill" style="width:${sipPct}%"></div></div>
+          <div class="sip-earned-txt">${sipPct}% · ${sipEarned>=SIP_GOAL?'✅ ROOM SELF-FUNDED!':'$'+(SIP_GOAL-sipEarned).toFixed(2)+' to go'}</div>
+        </div>`;
+    weeks.forEach(w=>{
+      const wEarned=DAYS.reduce((s,_,di)=>(s+(parseFloat(S.sipHours[`sip-${currentMonth}-${w.wi}-${di}`])||0)*SIP_RATE),0);
+      const wHrs=DAYS.reduce((s,_,di)=>(s+(parseFloat(S.sipHours[`sip-${currentMonth}-${w.wi}-${di}`])||0)),0);
+      const wOpen=S.collapsed[`sipw-${currentMonth}-${w.wi}`]===false;
+      html+=`<div class="sip-week">
+        <div class="sip-week-head" onclick="toggleSec('sipw-${currentMonth}-${w.wi}')">
+          <span class="sip-week-title">${w.label}</span>
+          <span class="sip-week-earned">${hrsToLabel(wHrs)||'0h'} · $${wEarned.toFixed(2)}</span>
+        </div>
+        <div class="sip-week-body ${wOpen?'open':''}">`;
+      DAYS.forEach((day,di)=>{
+        const k=`sip-${currentMonth}-${w.wi}-${di}`;
+        const hrs=S.sipHours[k]||'';
+        const earned=(parseFloat(hrs)||0)*SIP_RATE;
+        const dayDate=getDayDate(w.start,di);
+        const timeLabel=hrsToLabel(hrs);
+        html+=`<div class="sip-day-row">
+          <span class="sip-day-label">${day}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);min-width:45px">${dayDate}</span>
+          <input class="sip-hrs-input" type="number" min="0" step="0.5" placeholder="0" value="${hrs}"
+            onchange="S.sipHours['${k}']=this.value;save();render();" onclick="event.stopPropagation()"/>
+          <span class="sip-hrs-lbl">${timeLabel?timeLabel:'hrs'}</span>
+          <span class="sip-earned-day">${earned>0?'$'+earned.toFixed(2):''}</span>
+        </div>`;
+      });
+      html+=`</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  // DOORDASH
+  {
+    const ddTotal=getDDTotal(currentMonth);
+    const isOpen=!S.collapsed['dd-'+currentMonth];
+    html+=`<div class="section">
+      <div class="sec-head ${isOpen?'open':''}" onclick="toggleSec('dd-${currentMonth}')">
+        <span class="sec-emoji">🛵</span>
+        <div class="sec-info"><div class="sec-title" style="color:var(--blue)">DOORDASH · ${m.label.split(' ')[0]}</div><div class="sec-meta">4 sessions/week · date + amount</div></div>
+        <span class="sec-badge" style="color:var(--blue)">$${ddTotal.toFixed(2)}</span>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </div>
+      <div class="sec-body ${isOpen?'open':''}">
+        <div class="dd-summary">
+          <div class="dd-sum-row total"><span>MONTH TOTAL</span><span>$${ddTotal.toFixed(2)}</span></div>
+        </div>`;
+    weeks.forEach(w=>{
+      const ddCount=getDDCount(currentMonth,w.wi);
+      const wTotal=Array.from({length:ddCount},(_,s)=>parseFloat((S.ddSessions[`dd-${currentMonth}-${w.wi}-${s}`]||{}).amt)||0).reduce((a,b)=>a+b,0);
+      const wOpen=S.collapsed[`ddw-${currentMonth}-${w.wi}`]===false;
+      html+=`<div class="dd-week">
+        <div class="dd-week-head" onclick="toggleSec('ddw-${currentMonth}-${w.wi}')">
+          <span class="dd-week-title">${w.label}</span>
+          <span class="dd-week-total">$${wTotal.toFixed(2)}</span>
+        </div>
+        <div class="dd-week-body ${wOpen?'open':''}">`;
+      for(let s=0;s<ddCount;s++){
+        const k=`dd-${currentMonth}-${w.wi}-${s}`;
+        const sess=S.ddSessions[k]||{};
+        html+=`<div class="dd-session">
+          <span class="dd-session-label">S${s+1}</span>
+          <input class="dd-date-input" type="text" placeholder="May 14" value="${sess.date||''}"
+            onchange="if(!S.ddSessions['${k}'])S.ddSessions['${k}']={};S.ddSessions['${k}'].date=this.value;save();" onclick="event.stopPropagation()"/>
+          <input class="dd-input" type="text" placeholder="$0" value="${sess.amt||''}"
+            onchange="if(!S.ddSessions['${k}'])S.ddSessions['${k}']={};S.ddSessions['${k}'].amt=this.value;save();render();" onclick="event.stopPropagation()"/>
+        </div>`;
+      }
+      html+=`<div style="display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--border);margin-top:4px;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);cursor:pointer;padding:4px 8px;border:1px solid rgba(59,130,246,0.3);border-radius:4px;" onclick="setDDCount('${currentMonth}',${w.wi},${ddCount+1});event.stopPropagation()">+ Add Session</span>
+        ${ddCount>1?`<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);cursor:pointer;padding:4px 8px;border:1px solid rgba(239,68,68,0.3);border-radius:4px;" onclick="setDDCount('${currentMonth}',${w.wi},${ddCount-1});event.stopPropagation()">− Remove</span>`:''}
+      </div>`;
+      html+=`</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  // TIKTOK
+  {
+    const ttTotal=m.tiktok.reduce((s,i)=>s+(parseFloat(S.varValues[i.id])||0),0);
+    const isOpen=!S.collapsed['tt-'+currentMonth];
+    html+=`<div class="section">
+      <div class="sec-head ${isOpen?'open':''}" onclick="toggleSec('tt-${currentMonth}')">
+        <span class="sec-emoji">🎵</span>
+        <div class="sec-info"><div class="sec-title" style="color:#f87171">TIKTOK · ${m.label.split(' ')[0]}</div><div class="sec-meta">Thursdays · threshold based</div></div>
+        <span class="sec-badge" style="color:#f87171">$${ttTotal.toFixed(2)}</span>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </div>
+      <div class="sec-body ${isOpen?'open':''}">`;
+    m.tiktok.forEach(item=>{
+      html+=`<div class="var-row">
+        <div class="var-info"><div class="var-label">${item.label}</div><div class="var-sub">${item.sub}</div></div>
+        <input class="var-input" style="color:#f87171" type="text" placeholder="$0" value="${S.varValues[item.id]||''}"
+          onchange="S.varValues['${item.id}']=this.value;save();render();" onclick="event.stopPropagation()"/>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  // YOUTUBE
+  {
+    const ytTotal=m.youtube.reduce((s,i)=>s+(parseFloat(S.varValues[i.id])||0),0);
+    const isOpen=!S.collapsed['yt-'+currentMonth];
+    html+=`<div class="section">
+      <div class="sec-head ${isOpen?'open':''}" onclick="toggleSec('yt-${currentMonth}')">
+        <span class="sec-emoji">▶️</span>
+        <div class="sec-info"><div class="sec-title" style="color:#fb923c">YOUTUBE · ${m.label.split(' ')[0]}</div><div class="sec-meta">Paid 21st of month</div></div>
+        <span class="sec-badge" style="color:#fb923c">$${ytTotal.toFixed(2)}</span>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </div>
+      <div class="sec-body ${isOpen?'open':''}">`;
+    m.youtube.forEach(item=>{
+      html+=`<div class="var-row">
+        <div class="var-info"><div class="var-label">${item.label}</div><div class="var-sub">${item.sub}</div></div>
+        <input class="var-input" style="color:#fb923c" type="text" placeholder="$0" value="${S.varValues[item.id]||''}"
+          onchange="S.varValues['${item.id}']=this.value;save();render();" onclick="event.stopPropagation()"/>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  document.getElementById('sections-container').innerHTML=html;
+
+  // PROGRESS
+  const allM=['may','jun','jul','aug'];
+  let tot=0,chk=0;
+  allM.forEach(mo=>{
+    MONTHS[mo].hub.forEach(sec=>{
+      getAllItems(sec).filter(i=>i.t!=='v').forEach(i=>{tot++;if(S.checked[i.id])chk++;});
+    });
+    if(MONTHS[mo].kensington){
+      getAllItems({...MONTHS[mo].kensington,id:'ken-'+mo}).forEach(i=>{tot++;if(S.checked[i.id])chk++;});
+    }
+  });
+  const pct=tot>0?Math.round((chk/tot)*100):0;
+  document.getElementById('prog-txt').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+// SAVINGS / DEBT
+function renderSavings(){
+  let html='';
+  SAV_GOALS.forEach(g=>{
+    const saved=parseFloat(S.savings[g.id])||0;
+    const pct=Math.min(100,(saved/g.target)*100).toFixed(1);
+    const done=saved>=g.target;
+    html+=`<div class="goal-item">
+      <div class="goal-top"><div class="goal-name">${g.name}</div><div class="goal-target">$${g.target.toLocaleString()}</div></div>
+      <div class="goal-note">${g.note}</div>
+      <div class="goal-track"><div class="goal-fill-sav" style="width:${pct}%"></div></div>
+      <div class="goal-bot"><span style="color:var(--green)">$${saved.toFixed(2)} saved</span><span>${done?'✅ FUNDED':'$'+(g.target-saved).toFixed(2)+' to go · '+pct+'%'}</span></div>
+      <button class="alloc-btn" onclick="openAlloc('${g.id}','savings','${g.name}',${g.target})">+ Allocate</button>
+    </div>`;
+  });
+  document.getElementById('sav-body').innerHTML=html;
+}
+function renderDebt(){
+  let html='';
+  const credit=DEBT_GOALS.filter(g=>g.cat==='credit');
+  const personal=DEBT_GOALS.filter(g=>g.cat==='personal');
+  const creditOpen=!S.collapsed['debt-sec-credit'];
+  const personalOpen=!S.collapsed['debt-sec-personal'];
+
+  const creditPaid=credit.reduce((s,g)=>s+(parseFloat(S.debt[g.id])||0),0);
+  const creditTotal=credit.reduce((s,g)=>s+(parseFloat(S.debtTargets&&S.debtTargets[g.id]||g.target)),0);
+  const personalPaid=personal.reduce((s,g)=>s+(parseFloat(S.debt[g.id])||0),0);
+  const personalTotal=personal.reduce((s,g)=>s+(parseFloat(S.debtTargets&&S.debtTargets[g.id]||g.target)),0);
+
+  // CREDIT SECTION
+  html+=`<div class="section" style="margin-bottom:10px;">
+    <div class="sec-head ${creditOpen?'open':''}" onclick="toggleDebtSection('credit')" style="background:var(--red-dim);border-color:rgba(239,68,68,0.2);">
+      <span class="sec-emoji">💳</span>
+      <div class="sec-info">
+        <div class="sec-title" style="color:var(--red)">CREDIT DEBTS — TACKLE FIRST</div>
+        <div class="sec-meta">These affect your score · clear by end of 2026</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red)">$${creditPaid.toFixed(0)} paid</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim)">of $${creditTotal.toFixed(0)}</div>
+      </div>
+      <span class="chev ${creditOpen?'open':''}">▼</span>
+    </div>
+    <div class="sec-body ${creditOpen?'open':''}">`;
+
+  credit.forEach(g=>{
+    const paid=parseFloat(S.debt[g.id])||0;
+    const target=parseFloat(S.debtTargets&&S.debtTargets[g.id]||g.target);
+    const note=S.debtNotes&&S.debtNotes[g.id]?S.debtNotes[g.id]:g.note;
+    const pct=Math.min(100,(paid/target)*100).toFixed(1);
+    const done=paid>=target;
+    html+=`<div class="goal-item">
+      <div class="goal-top"><div class="goal-name">${g.name}</div><div class="goal-target" style="color:var(--red)">$${target.toLocaleString()}</div></div>
+      <div class="goal-note">${note}</div>
+      <div class="goal-track"><div class="goal-fill-debt" style="width:${pct}%"></div></div>
+      <div class="goal-bot"><span style="color:var(--red)">$${paid.toFixed(2)} paid</span><span>${done?'✅ CLEARED':'$'+(target-paid).toFixed(2)+' left · '+pct+'%'}</span></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="alloc-btn debt" onclick="openAlloc('${g.id}','debt','${g.name}',${target})">+ Log Payment</button>
+        <button class="alloc-btn" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(245,166,35,0.2);" onclick="openDebtEdit('${g.id}','${g.name}',${target},${paid})">✏️ Edit</button>
+      </div>
+    </div>`;
+  });
+
+  html+=`</div></div>`;
+
+  // PERSONAL SECTION
+  html+=`<div class="section" style="margin-bottom:10px;">
+    <div class="sec-head ${personalOpen?'open':''}" onclick="toggleDebtSection('personal')" style="background:rgba(100,100,100,0.08);border-color:rgba(150,150,150,0.15);">
+      <span class="sec-emoji">👤</span>
+      <div class="sec-info">
+        <div class="sec-title" style="color:var(--text-mid)">PERSONAL DEBTS</div>
+        <div class="sec-meta">After credit is clean · no interest · smallest first</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mid)">$${personalPaid.toFixed(0)} paid</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim)">of $${personalTotal.toFixed(0)}</div>
+      </div>
+      <span class="chev ${personalOpen?'open':''}">▼</span>
+    </div>
+    <div class="sec-body ${personalOpen?'open':''}">`;
+
+  personal.forEach(g=>{
+    const paid=parseFloat(S.debt[g.id])||0;
+    const target=parseFloat(S.debtTargets&&S.debtTargets[g.id]||g.target);
+    const note=S.debtNotes&&S.debtNotes[g.id]?S.debtNotes[g.id]:g.note;
+    const pct=Math.min(100,(paid/target)*100).toFixed(1);
+    const done=paid>=target;
+    html+=`<div class="goal-item">
+      <div class="goal-top"><div class="goal-name">${g.name}</div><div class="goal-target" style="color:var(--text-mid)">$${target.toLocaleString()}</div></div>
+      <div class="goal-note">${note}</div>
+      <div class="goal-track"><div class="goal-fill-debt" style="width:${pct}%;background:linear-gradient(90deg,#666,#888)"></div></div>
+      <div class="goal-bot"><span style="color:var(--text-mid)">$${paid.toFixed(2)} paid</span><span>${done?'✅ CLEARED':'$'+(target-paid).toFixed(2)+' left · '+pct+'%'}</span></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="alloc-btn debt" style="border-color:rgba(150,150,150,0.3);color:var(--text-mid);background:rgba(100,100,100,0.1);" onclick="openAlloc('${g.id}','debt','${g.name}',${target})">+ Log Payment</button>
+        <button class="alloc-btn" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(245,166,35,0.2);" onclick="openDebtEdit('${g.id}','${g.name}',${target},${paid})">✏️ Edit</button>
+      </div>
+    </div>`;
+  });
+
+  html+=`</div></div>`;
+  document.getElementById('debt-body').innerHTML=html;
+}
+
+// ACTIONS
+function toggleLateFee(tenantId,type){
+  if(!S.kenLateFees)S.kenLateFees={};
+  const key=tenantId+'_'+type;
+  S.kenLateFees[key]=!S.kenLateFees[key];
+  save();render();
+}
+function toggleDebtSection(type){
+  S.collapsed['debt-sec-'+type]=!S.collapsed['debt-sec-'+type];
+  save();renderDebt();
+}
+function toggleSec(id){S.collapsed[id]=!S.collapsed[id];save();render();}
+function toggleItem(id){S.checked[id]=!S.checked[id];save();render();}
+function toggleAddForm(sid){const f=document.getElementById('af-'+sid);if(f)f.classList.toggle('open');}
+function addCustom(sid){
+  const l=document.getElementById('al-'+sid).value.trim();
+  const a=document.getElementById('aa-'+sid).value.trim();
+  const s=document.getElementById('as-'+sid).value.trim();
+  if(!l)return;
+  if(!S.customItems[sid])S.customItems[sid]=[];
+  S.customItems[sid].push({id:'c-'+Date.now(),label:l,amount:a||'0',sub:s,t:a.startsWith('+')?'i':'e'});
+  save();render();
+}
+function deleteCustom(sid,id){
+  if(!S.customItems[sid])return;
+  S.customItems[sid]=S.customItems[sid].filter(i=>i.id!==id);
+  delete S.checked[id];delete S.amounts[id];delete S.paidWith[id];
+  save();render();
+}
+
+// SPENDINGS
+function addSpendItem(itemId){
+  const lbl=document.getElementById('sp-lbl-'+itemId).value.trim();
+  const amt=document.getElementById('sp-amt-'+itemId).value.replace('$','').trim();
+  const dt=document.getElementById('sp-dt-'+itemId).value.trim();
+  if(!lbl||!amt)return;
+  if(!S.spendItems[itemId])S.spendItems[itemId]=[];
+  S.spendItems[itemId].push({id:'si-'+Date.now(),label:lbl,amount:parseFloat(amt)||0,date:dt});
+  save();render();
+}
+function rmSpendItem(itemId,siId){
+  if(!S.spendItems[itemId])return;
+  S.spendItems[itemId]=S.spendItems[itemId].filter(i=>i.id!==siId);
+  save();render();
+}
+
+// EDIT MODAL
+function openEdit(itemId,secId,isCustom){
+  editItemId=itemId;editSecId=secId;editIsCustom=isCustom;
+  // find item
+  let item=null;
+  Object.values(MONTHS).forEach(m=>{
+    m.hub.forEach(sec=>{getAllItems(sec).forEach(i=>{if(i.id===itemId)item=i;});});
+    if(m.kensington)getAllItems({...m.kensington,id:'x'}).forEach(i=>{if(i.id===itemId)item=i;});
+  });
+  if(!item&&S.customItems[secId])item=S.customItems[secId].find(i=>i.id===itemId);
+  if(!item)return;
+  document.getElementById('edit-label').value=getLabel(item);
+  document.getElementById('edit-amount').value=S.amounts[itemId]!==undefined?S.amounts[itemId]:(item.amount||'');
+  document.getElementById('edit-sub').value=getSub(item);
+  document.getElementById('edit-overlay').classList.add('open');
+}
+function closeEdit(){document.getElementById('edit-overlay').classList.remove('open');}
+function confirmEdit(){
+  S.labels[editItemId]=document.getElementById('edit-label').value.trim();
+  S.amounts[editItemId]=document.getElementById('edit-amount').value.trim();
+  S.subs[editItemId]=document.getElementById('edit-sub').value.trim();
+  if(editIsCustom&&S.customItems[editSecId]){
+    const ci=S.customItems[editSecId].find(i=>i.id===editItemId);
+    if(ci){ci.label=S.labels[editItemId];ci.amount=S.amounts[editItemId];ci.sub=S.subs[editItemId];}
+  }
+  save();closeEdit();render();
+}
+function deleteItem(){
+  if(editIsCustom){
+    if(S.customItems[editSecId])S.customItems[editSecId]=S.customItems[editSecId].filter(i=>i.id!==editItemId);
+  } else {
+    if(!S.customItems['__hidden'])S.customItems['__hidden']=[];
+    if(!S.customItems['__hidden'].includes(editItemId))S.customItems['__hidden'].push(editItemId);
+  }
+  delete S.checked[editItemId];
+  delete S.amounts[editItemId];
+  delete S.labels[editItemId];
+  delete S.subs[editItemId];
+  save();closeEdit();render();
+}
+
+function hrsToLabel(h){
+  const n=parseFloat(h)||0;
+  if(n===0)return '';
+  const mins=Math.round(n*60);
+  const hr=Math.floor(mins/60);
+  const mn=mins%60;
+  if(hr>0&&mn>0)return `${hr}h ${mn}m`;
+  if(hr>0)return `${hr}h`;
+  return `${mn}m`;
+}
+
+// Get actual date for a day in a week
+function getDayDate(weekStart,dayIndex){
+  const d=new Date(weekStart);d.setDate(d.getDate()+dayIndex);
+  return fmt(d);
+}
+
+function getDDCount(month,wi){return S.ddCounts&&S.ddCounts[`${month}-${wi}`]!==undefined?S.ddCounts[`${month}-${wi}`]:4;}
+function setDDCount(month,wi,n){if(!S.ddCounts)S.ddCounts={};S.ddCounts[`${month}-${wi}`]=Math.max(1,n);save();render();}
+
+
+// PAY MODAL
+function openPay(id,label){
+  payTargetId=id;
+  document.getElementById('pay-bill-lbl').textContent='Bill: '+label;
+  document.getElementById('pay-amt').value='';
+  document.getElementById('pay-overlay').classList.add('open');
+}
+function closePay(){document.getElementById('pay-overlay').classList.remove('open');}
+function confirmPay(){
+  const src=document.getElementById('pay-src').value;
+  const amt=document.getElementById('pay-amt').value;
+  if(!amt)return;
+  S.paidWith[payTargetId]={source:src,amount:amt};
+  S.checked[payTargetId]=true;
+  save();closePay();render();
+}
+
+// ALLOC MODAL
+function openAlloc(id,type,name,target){
+  allocTargetId=id;allocType=type;
+  document.getElementById('alloc-title').textContent=type==='savings'?'🎯 Allocate to Savings':'💳 Log Payment';
+  document.getElementById('alloc-note').textContent=name+' · Target $'+parseFloat(target).toLocaleString();
+  document.getElementById('alloc-amt').value='';
+  document.getElementById('alloc-overlay').classList.add('open');
+}
+function closeAlloc(){document.getElementById('alloc-overlay').classList.remove('open');}
+function confirmAlloc(){
+  const amt=parseFloat(document.getElementById('alloc-amt').value)||0;
+  if(!amt)return;
+  if(allocType==='savings')S.savings[allocTargetId]=(parseFloat(S.savings[allocTargetId])||0)+amt;
+  else S.debt[allocTargetId]=(parseFloat(S.debt[allocTargetId])||0)+amt;
+  save();closeAlloc();
+  if(allocType==='savings')renderSavings();else renderDebt();
+}
+
+// ── SAVE / LOAD ──────────────────────────────────────────
+function updateSaveStatus(msg,type){
+  const el=document.getElementById('save-status');
+  if(!el)return;
+  el.textContent=msg;
+  el.className='save-status '+(type||'');
+}
+
+function exportSave(){
+  const data=JSON.stringify(S);
+  // Copy to clipboard
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(data).then(()=>{
+      updateSaveStatus('✅ Copied! Paste into Notes to save','saved');
+      showSaveModal(data);
+    }).catch(()=>showSaveModal(data));
+  } else {
+    showSaveModal(data);
+  }
+}
+
+function showSaveModal(data){
+  document.getElementById('save-modal-text').value=data;
+  document.getElementById('save-modal').classList.add('open');
+}
+
+function importSave(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const parsed=JSON.parse(e.target.result);
+      S={...S,...parsed};
+      save();render();
+      updateSaveStatus('✅ Save loaded successfully','saved');
+    }catch(err){
+      updateSaveStatus('❌ Invalid file','');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function loadFromText(){
+  const txt=document.getElementById('load-modal-text').value.trim();
+  try{
+    const parsed=JSON.parse(txt);
+    S={...S,...parsed};
+    save();render();
+    closeLoadModal();
+    updateSaveStatus('✅ Save loaded successfully','saved');
+  }catch(e){
+    document.getElementById('load-modal-text').style.borderColor='var(--red)';
+    document.getElementById('load-modal-text').placeholder='❌ Invalid data — paste your save text exactly';
+  }
+}
+
+function openLoadModal(){document.getElementById('load-modal').classList.add('open');}
+function closeLoadModal(){document.getElementById('load-modal').classList.remove('open');}
+function closeSaveModal(){document.getElementById('save-modal').classList.remove('open');}
+
+function copySaveText(){
+  const txt=document.getElementById('save-modal-text');
+  txt.select();
+  try{
+    document.execCommand('copy');
+    updateSaveStatus('✅ Copied! Paste into Notes to save','saved');
+  }catch(e){}
+  closeSaveModal();
+}
+let resetType='';
+let lastBackup=null;
+
+function openReset(type){
+  resetType=type;
+  const labels={all:'all checkboxes and paid tags',savings:'all savings progress',debt:'all debt payment progress'};
+  document.getElementById('reset-title').textContent='⚠️ Reset '+type.charAt(0).toUpperCase()+type.slice(1);
+  document.getElementById('reset-desc').textContent='You are about to reset '+labels[type]+'. Are you sure you want to do this?';
+  document.getElementById('reset-confirm-input').value='';
+  document.getElementById('reset-backup-info').style.display='none';
+  resetStep(1);
+  document.getElementById('reset-overlay').classList.add('open');
+}
+
+function closeReset(){document.getElementById('reset-overlay').classList.remove('open');}
+
+function resetStep(n){
+  [1,2,3].forEach(i=>document.getElementById('reset-step'+i).style.display='none');
+  document.getElementById('reset-step'+n).style.display='block';
+}
+
+function executeReset(){
+  const val=document.getElementById('reset-confirm-input').value.trim().toUpperCase();
+  if(val!=='RESET'){
+    document.getElementById('reset-confirm-input').style.borderColor='var(--red)';
+    document.getElementById('reset-confirm-input').placeholder='Must type RESET exactly';
+    return;
+  }
+  // Save backup first
+  lastBackup=JSON.stringify(S);
+  const backupKey=SK+'-backup-'+Date.now();
+  localStorage.setItem(backupKey,lastBackup);
+  // also keep a quick-restore key
+  localStorage.setItem(SK+'-latest-backup',lastBackup);
+
+  // Execute reset
+  if(resetType==='all'){S.checked={};S.paidWith={};}
+  else if(resetType==='savings'){S.savings={};}
+  else if(resetType==='debt'){S.debt={};}
+  save();
+
+  // Show backup confirmation
+  const now=new Date();
+  document.getElementById('reset-backup-time').textContent='Backup saved at '+now.toLocaleTimeString()+' · '+now.toLocaleDateString();
+  document.getElementById('reset-backup-info').style.display='block';
+  [1,2,3].forEach(i=>document.getElementById('reset-step'+i).style.display='none');
+
+  if(resetType==='savings')renderSavings();
+  else if(resetType==='debt')renderDebt();
+  else render();
+}
+
+function downloadBackup(){
+  if(!lastBackup)lastBackup=localStorage.getItem(SK+'-latest-backup');
+  if(!lastBackup)return;
+  const blob=new Blob([lastBackup],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='junior-tracker-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('reset-overlay').addEventListener('click',function(e){if(e.target===this)closeReset();});
+
+// ── DEBT EDIT ────────────────────────────────────────────
+let debtEditId='';
+
+function openDebtEdit(id,name,target,paid){
+  debtEditId=id;
+  document.getElementById('debt-edit-name').textContent=name;
+  document.getElementById('debt-edit-target').value=S.debtTargets[id]||target;
+  document.getElementById('debt-edit-paid').value=paid||0;
+  document.getElementById('debt-edit-note').value=S.debtNotes[id]||'';
+  document.getElementById('debt-edit-overlay').classList.add('open');
+}
+function closeDebtEdit(){document.getElementById('debt-edit-overlay').classList.remove('open');}
+function confirmDebtEdit(){
+  const newTarget=parseFloat(document.getElementById('debt-edit-target').value)||0;
+  const newPaid=parseFloat(document.getElementById('debt-edit-paid').value)||0;
+  const newNote=document.getElementById('debt-edit-note').value.trim();
+  if(!S.debtTargets)S.debtTargets={};
+  if(!S.debtNotes)S.debtNotes={};
+  S.debtTargets[debtEditId]=newTarget;
+  S.debt[debtEditId]=newPaid;
+  if(newNote)S.debtNotes[debtEditId]=newNote;
+  save();closeDebtEdit();renderDebt();
+}
+document.getElementById('debt-edit-overlay').addEventListener('click',function(e){if(e.target===this)closeDebtEdit();});
+
+// SKIP MODAL
+let skipItemId='',skipItemLabel='',skipSecId='';
+function openSkip(id,label,secId){
+  skipItemId=id;skipItemLabel=label;skipSecId=secId;
+  document.getElementById('skip-bill-lbl').textContent=label;
+  document.getElementById('skip-reason').value='';
+  document.getElementById('skip-overlay').classList.add('open');
+}
+function closeSkip(){document.getElementById('skip-overlay').classList.remove('open');}
+
+function getNextSecId(secId){
+  // find next HUB check across all months in order
+  const order=['may','jun','jul','aug'];
+  let allSecs=[];
+  order.forEach(mo=>MONTHS[mo].hub.forEach(sec=>allSecs.push(sec.id)));
+  const idx=allSecs.indexOf(secId);
+  return idx>=0&&idx<allSecs.length-1?allSecs[idx+1]:null;
+}
+
+function confirmSkip(action){
+  const reason=document.getElementById('skip-reason').value.trim();
+  if(action==='skip'){
+    S.skipped[skipItemId]={reason};
+    delete S.forwarded[skipItemId];
+  } else {
+    // forward — find next check and add item there
+    const nextSecId=getNextSecId(skipSecId);
+    if(!nextSecId){alert('No next check found.');return;}
+    // find the item to get its amount
+    let itemAmt=0,itemSub='';
+    Object.values(MONTHS).forEach(m=>m.hub.forEach(sec=>{
+      getAllItems(sec).forEach(i=>{if(i.id===skipItemId){itemAmt=Math.abs(getAmt(i));itemSub=getSub(i);}});
+    }));
+    S.forwarded[skipItemId]={reason,toSecId:nextSecId};
+    delete S.skipped[skipItemId];
+    if(!S.forwarded_in[nextSecId])S.forwarded_in[nextSecId]=[];
+    // avoid duplicates
+    if(!S.forwarded_in[nextSecId].find(f=>f.id===skipItemId)){
+      S.forwarded_in[nextSecId].push({id:skipItemId,label:skipItemLabel,amount:itemAmt,sub:itemSub,reason,fromSecId:skipSecId});
+    }
+  }
+  save();closeSkip();render();
+}
+
+function clearSkip(id){
+  const fwd=S.forwarded[id];
+  if(fwd&&fwd.toSecId&&S.forwarded_in[fwd.toSecId]){
+    S.forwarded_in[fwd.toSecId]=S.forwarded_in[fwd.toSecId].filter(f=>f.id!==id);
+  }
+  delete S.skipped[id];
+  delete S.forwarded[id];
+  save();render();
+}
+
+function removeFwdIn(secId,itemId){
+  if(S.forwarded_in[secId])S.forwarded_in[secId]=S.forwarded_in[secId].filter(f=>f.id!==itemId);
+  delete S.forwarded[itemId];
+  save();render();
+}
+
+document.getElementById('skip-overlay').addEventListener('click',function(e){if(e.target===this)closeSkip();});
+
+document.getElementById('edit-overlay').addEventListener('click',function(e){if(e.target===this)closeEdit();});
+document.getElementById('pay-overlay').addEventListener('click',function(e){if(e.target===this)closePay();});
+document.getElementById('alloc-overlay').addEventListener('click',function(e){if(e.target===this)closeAlloc();});
+
+document.getElementById('save-modal').addEventListener('click',function(e){if(e.target===this)closeSaveModal();});
+document.getElementById('load-modal').addEventListener('click',function(e){if(e.target===this)closeLoadModal();});
+
+load();render();
+</script>
+
+</body>
+</html>
